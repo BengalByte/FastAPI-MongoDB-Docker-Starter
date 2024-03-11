@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Annotated, List, Optional
+from typing import Annotated, List
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 from pydantic.functional_validators import BeforeValidator
@@ -13,31 +13,7 @@ class UserType(str, Enum):
     SUPERADMIN = "superAdmin"
 
 
-class UserModel(BaseModel):
-    id: Optional[PyObjectId] = Field(alias="_id", default=None)
-    userType: UserType = Field(default=UserType.SELLER)
-    userName: str = Field(...)
-    email: EmailStr = Field(...)
-    createdAt: str = Field(...)
-    updatedAt: str = Field(...)
-    lastLoginAt: str = Field(...)
-    password: str = Field(...)
-    model_config = ConfigDict(
-        populate_by_name=True,
-        arbitrary_types_allowed=True,
-        json_schema_extra={
-            "userType": "seller",
-            "userName": "John Doe",
-            "email": "johndoe@gmail.com",
-            "createdAt": "2021-07-01",
-            "updatedAt": "2021-07-01",
-            "lastLoginAt": "2021-07-01",
-            "password": "password",
-        },
-    )
-
-
-class UserCreateModel(BaseModel):
+class UserBaseModel(BaseModel):
     userType: UserType = Field(default=UserType.SELLER)
     userName: str = Field(...)
     email: EmailStr = Field(...)
@@ -48,40 +24,21 @@ class UserCreateModel(BaseModel):
         json_schema_extra={
             "userType": "seller",
             "userName": "John Doe",
-            "email": "user@email.com",
+            "email": "john@email.com",
             "password": "XXXXXXXX",
         },
     )
 
 
-class UserCreateResponseModel(BaseModel):
-    userType: UserType = Field(default=UserType.SELLER)
-    userName: str = Field(...)
-    email: EmailStr = Field(...)
-    password: str = Field(...)
-    model_config = ConfigDict(
-        populate_by_name=True,
-        arbitrary_types_allowed=True,
-        json_schema_extra={
-            "userType": "seller",
-            "userName": "John Doe",
-            "email": "user@email.com",
-            "password": "XXXXXXXX",
-        },
-    )
+class UserModel(UserBaseModel):
     id: PyObjectId = Field(alias="_id")
-    createdAt: str = Field(...)
-    updatedAt: str = Field(...)
-    lastLoginAt: str = Field(...)
+    createdAt: int = Field(...)
+    updatedAt: int = Field(...)
+    lastLoginAt: int = Field(...)
     model_config = ConfigDict(
         populate_by_name=True,
         arbitrary_types_allowed=True,
         json_schema_extra={
-            "userType": "seller",
-            "userName": "John Doe",
-            "email": "user@email.com",
-            "password": "XXXXXXXX",
-            "id": "XXXXXXXXXXXXXX",
             "createdAt": "2021-07-01",
             "updatedAt": "2021-07-01",
             "lastLoginAt": "2021-07-01",
@@ -89,28 +46,29 @@ class UserCreateResponseModel(BaseModel):
     )
 
 
-class UserUpdateModel(BaseModel):
-    userType: UserType = Field(default=UserType.SELLER)
-    userName: str = Field(...)
-    email: EmailStr = Field(...)
-    password: str = Field(...)
-    model_config = ConfigDict(
-        populate_by_name=True,
-        arbitrary_types_allowed=True,
-        json_schema_extra={
-            "userType": "seller",
-            "userName": "John Doe",
-            "email": "user@email.com",
-            "password": "XXXXXXXX",
-        },
-    )
+class UserCreateRequestModel(UserBaseModel): ...
 
 
-class UserCollection(BaseModel):
+class UserCreateResponseModel(UserModel): ...
+
+
+class UserUpdateRequestModel(UserBaseModel):
+    id: PyObjectId = Field(alias="_id")
+
+
+class UserUpdateResponseModel(UserModel): ...
+
+
+class UserDeleteResponseModel(BaseModel):
+    message: str = Field(...)
+
+
+class UserGetResponseModel(UserModel): ...
+
+
+class UserCollectionModel(BaseModel):
     """
-    A container holding a list of `StudentModel` instances.
-
-    This exists because providing a top-level array in a JSON response can be a [vulnerability](https://haacked.com/archive/2009/06/25/json-hijacking.aspx/)
+    A container holding a list of `UserModel` instances.
     """
 
     users: List[UserModel]

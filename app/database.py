@@ -23,14 +23,18 @@ class DataBase:
     #     self.account_details_collection.create_index("email")
     #     self.account_details_collection.create_index("phone_number")
 
+
 USER = os.getenv("MONGOUSERNAME")
 PASSWORD = os.getenv("MONGOPASSWORD")
 MONGODB_URL = os.getenv("MONGODB_URL")
 
-MONGODB_URL = f"mongodb+srv://{USER}:{PASSWORD}@cluster0.fojn3vj.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0" if not MONGODB_URL else MONGODB_URL
+MONGODB_URL = (
+    f"mongodb+srv://{USER}:{PASSWORD}@cluster0.fojn3vj.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+    if not MONGODB_URL
+    else MONGODB_URL
+)
 
 client = AsyncIOMotorClient(MONGODB_URL)
-db = client.college
-student_collection = db.get_collection("students")
+db = client.worktite
 user_collection = db.get_collection("users")
 account_details_collection = db.get_collection("accountDetails")
