@@ -1,14 +1,41 @@
-from typing import Annotated
-
 from pydantic import BaseModel
-from pydantic.functional_validators import BeforeValidator
 
-from ..models.account_details import AccountDetailResponseModel
-from ..models.user import UserCreateResponseModel
+from ..models.account_details import (
+    AccountDetailsCreateRequestModel,
+    AccountDetailsCreateResponseModel,
+    AccountDetailsModel,
+    AccountDetailsUpdateRequestModel,
+    AccountDetailsUpdateResponseModel,
+)
+from ..models.user import (
+    UserCreateRequestModel,
+    UserCreateResponseModel,
+    UserModel,
+    UserUpdateRequestModel,
+    UserUpdateResponseModel,
+)
 
-PyObjectId = Annotated[str, BeforeValidator(str)]
+
+class UserAccountDetailsCreateRequestModel(BaseModel):
+    user: UserCreateRequestModel
+    accountDetails: AccountDetailsCreateRequestModel
+
+
+class UserAccountDetailsCreateResponseModel(BaseModel):
+    user: UserCreateResponseModel
+    accountDetails: AccountDetailsCreateResponseModel
 
 
 class UserAccountDetailsModel(BaseModel):
-    user: UserCreateResponseModel
-    accountDetails: AccountDetailResponseModel
+    user: UserModel
+    accountDetails: AccountDetailsModel
+
+
+class UserAccountDetailsUpdateRequestModel(BaseModel):
+    user: UserUpdateRequestModel
+    accountDetails: AccountDetailsUpdateRequestModel
+
+
+class UserAccountDetailsUpdateResponseModel(BaseModel):
+    user: UserUpdateResponseModel
+    accountDetails: AccountDetailsUpdateResponseModel
