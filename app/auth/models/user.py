@@ -1,16 +1,17 @@
 from enum import Enum
 from typing import Annotated, List, Optional
 
-from bson import ObjectId
-from pydantic import AnyHttpUrl, BaseModel, ConfigDict, EmailStr, Field, HttpUrl
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 from pydantic.functional_validators import BeforeValidator
 
 PyObjectId = Annotated[str, BeforeValidator(str)]
+
 
 class UserType(str, Enum):
     ADMIN = "admin"
     SELLER = "seller"
     SUPERADMIN = "superAdmin"
+
 
 class UserModel(BaseModel):
     id: Optional[PyObjectId] = Field(alias="_id", default=None)
@@ -25,15 +26,16 @@ class UserModel(BaseModel):
         populate_by_name=True,
         arbitrary_types_allowed=True,
         json_schema_extra={
-           "userType": "seller",
-           "userName": "John Doe",
-           "email": "johndoe@gmail.com",
-           "createdAt": "2021-07-01",
-           "updatedAt": "2021-07-01",
-           "lastLoginAt": "2021-07-01",
-           "password": "password"
-        }
+            "userType": "seller",
+            "userName": "John Doe",
+            "email": "johndoe@gmail.com",
+            "createdAt": "2021-07-01",
+            "updatedAt": "2021-07-01",
+            "lastLoginAt": "2021-07-01",
+            "password": "password",
+        },
     )
+
 
 class UserCreateModel(BaseModel):
     userType: UserType = Field(default=UserType.SELLER)
@@ -44,13 +46,12 @@ class UserCreateModel(BaseModel):
         populate_by_name=True,
         arbitrary_types_allowed=True,
         json_schema_extra={
-           "userType": "seller",
-           "userName": "John Doe",
-           "email": "XXXXXXXXXXXXXXXXX",
-           "password": "XXXXXXXX"
-        }
+            "userType": "seller",
+            "userName": "John Doe",
+            "email": "user@email.com",
+            "password": "XXXXXXXX",
+        },
     )
-
 
 
 class UserUpdateModel(BaseModel):
@@ -62,12 +63,13 @@ class UserUpdateModel(BaseModel):
         populate_by_name=True,
         arbitrary_types_allowed=True,
         json_schema_extra={
-           "userType": "seller",
-           "userName": "John Doe",
-           "email": "XXXXXXXXXXXXXXXXX",
-           "password": "XXXXXXXX"
-        }
+            "userType": "seller",
+            "userName": "John Doe",
+            "email": "user@email.com",
+            "password": "XXXXXXXX",
+        },
     )
+
 
 class UserCollection(BaseModel):
     """
@@ -77,5 +79,3 @@ class UserCollection(BaseModel):
     """
 
     users: List[UserModel]
-
-
