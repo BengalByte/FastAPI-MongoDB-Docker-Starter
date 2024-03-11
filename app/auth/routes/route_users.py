@@ -16,37 +16,6 @@ from ..models.user_account_details import (
 user_router = APIRouter()
 
 
-# @user_router.post(
-#     "/users/",
-#     response_description="Add new user",
-#     response_model=UserAccountDetailsModel,
-#     status_code=status.HTTP_201_CREATED,
-#     response_model_by_alias=False,
-# )
-# async def create_user(body: UserAccountDetailsCreateModel) -> UserAccountDetailsModel:
-#     """
-#     Insert a new user record.
-
-#     A unique `id` will be created and provided in the response.
-#     """
-#     user = body.user
-#     new_user = await user_collection.insert_one(user.model_dump(by_alias=True))
-#     created_user = await user_collection.find_one({"_id": new_user.inserted_id})
-#     accountDetails = body.accountDetails
-#     account_details = accountDetails.model_dump(by_alias=True)
-#     account_details["userID"] = new_user.inserted_id
-
-#     new_account_details = await account_details_collection.insert_one(account_details)
-
-#     created_account_details = await account_details_collection.find_one(
-#         {"_id": new_account_details.inserted_id}
-#     )
-
-#     return UserAccountDetailsModel(
-#         user=created_user, accountDetails=created_account_details
-#     )
-
-
 @user_router.post(
     "/users/",
     response_description="Add new user",
