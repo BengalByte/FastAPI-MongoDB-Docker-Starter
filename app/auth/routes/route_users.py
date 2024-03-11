@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Body, HTTPException, Response, status
-from app.database import user_collection, account_details_collection
-from ..models.user import UserModel, UserCollection
-from ..models.account_details import AccountDetailsModel, AccountDetailsCollection
-from ..models.user_account_details import UserAccountDetailsModel
 from bson import ObjectId
+from fastapi import APIRouter, Body, HTTPException, Response, status
+
+from app.database import account_details_collection, user_collection
+
+from ..models.user import UserCollection
+from ..models.user_account_details import UserAccountDetailsModel
 
 user_router = APIRouter()
 
@@ -14,23 +15,27 @@ user_router = APIRouter()
         status_code=status.HTTP_201_CREATED,
         response_model_by_alias=False,
 ) 
-async def create_user(user: UserModel = Body(...), accountDetails : AccountDetailsModel = Body(...)) ->UserAccountDetailsModel: 
+async def create_user(body: UserAccountDetailsModel) ->UserAccountDetailsModel: 
     """
     Insert a new user record.
 
     A unique `id` will be created and provided in the response.
     """
+    user = body.user
     new_user = await user_collection.insert_one(
         user.model_dump(by_alias=True, exclude=["id"])
     )
     created_user = await user_collection.find_one(
         {"_id": new_user.inserted_id}
     )
-    
-    accountDetails.userID = new_user.inserted_id
+    accountDetails = body.accountDetails
+    account_details = accountDetails.model_dump(by_alias=True, exclude=["id"])
+    account_details["userID"] = new_user.inserted_id
+
     new_account_details = await account_details_collection.insert_one(
-        accountDetails.model_dump(by_alias=True, exclude=["id"])
+        account_details
     )
+    
     created_account_details = await account_details_collection.find_one(
         {"_id": new_account_details.inserted_id}
     )

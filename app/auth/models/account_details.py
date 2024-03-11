@@ -1,6 +1,7 @@
-from pydantic import BaseModel, EmailStr, Field, ConfigDict
 from enum import Enum
-from typing import Optional, Annotated, List
+from typing import Annotated, List, Optional
+
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 from pydantic.functional_validators import BeforeValidator
 
 PyObjectId = Annotated[str, BeforeValidator(str)]
@@ -45,6 +46,21 @@ class AccountDetailsModel(BaseModel):
             "updatedAt": "2021-07-01"
         }
     )
+
+
+class AccountDetailCreateModel(BaseModel):
+    name: str | None = Field(None)
+    image: str | None
+
+    model_config = ConfigDict(
+        populate_by_name=True,
+        arbitrary_types_allowed=True,
+        json_schema_extra={
+            "name": "John Doe",
+            "image": "https://www.example.com/image.jpg"
+        }
+    )
+
 
 class AccountDetailsCollection(BaseModel):
     """
