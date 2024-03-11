@@ -54,6 +54,41 @@ class UserCreateModel(BaseModel):
     )
 
 
+class UserCreateResponseModel(BaseModel):
+    userType: UserType = Field(default=UserType.SELLER)
+    userName: str = Field(...)
+    email: EmailStr = Field(...)
+    password: str = Field(...)
+    model_config = ConfigDict(
+        populate_by_name=True,
+        arbitrary_types_allowed=True,
+        json_schema_extra={
+            "userType": "seller",
+            "userName": "John Doe",
+            "email": "user@email.com",
+            "password": "XXXXXXXX",
+        },
+    )
+    id: PyObjectId = Field(alias="_id")
+    createdAt: str = Field(...)
+    updatedAt: str = Field(...)
+    lastLoginAt: str = Field(...)
+    model_config = ConfigDict(
+        populate_by_name=True,
+        arbitrary_types_allowed=True,
+        json_schema_extra={
+            "userType": "seller",
+            "userName": "John Doe",
+            "email": "user@email.com",
+            "password": "XXXXXXXX",
+            "id": "XXXXXXXXXXXXXX",
+            "createdAt": "2021-07-01",
+            "updatedAt": "2021-07-01",
+            "lastLoginAt": "2021-07-01",
+        },
+    )
+
+
 class UserUpdateModel(BaseModel):
     userType: UserType = Field(default=UserType.SELLER)
     userName: str = Field(...)

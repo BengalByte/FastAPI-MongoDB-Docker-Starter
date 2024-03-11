@@ -1,13 +1,14 @@
-from typing import Annotated, List, Optional
+from typing import Annotated
 
-from pydantic import AnyHttpUrl, BaseModel, ConfigDict, EmailStr, Field, HttpUrl
+from pydantic import BaseModel
 from pydantic.functional_validators import BeforeValidator
 
-from ..models.account_details import AccountDetailCreateModel, AccountDetailsModel
-from ..models.user import UserCreateModel, UserModel
+from ..models.account_details import AccountDetailResponseModel
+from ..models.user import UserCreateResponseModel
 
 PyObjectId = Annotated[str, BeforeValidator(str)]
 
+
 class UserAccountDetailsModel(BaseModel):
-    user: UserCreateModel
-    accountDetails: AccountDetailCreateModel
+    user: UserCreateResponseModel
+    accountDetails: AccountDetailResponseModel
