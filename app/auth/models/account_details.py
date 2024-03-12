@@ -49,6 +49,7 @@ class AccountDetailsBaseModel(BaseModel):
     )
 
 
+
 class AccountDetailsModel(AccountDetailsBaseModel):
     id: Optional[PyObjectId] = Field(alias="_id", default=None)
 

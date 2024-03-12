@@ -34,10 +34,12 @@ async def create_user(
     A unique `id` will be created and provided in the response.
     """
     user = body.user
+
     now = int(datetime.utcnow().timestamp())
     user_data = user.model_dump()
     user_data.update({"createdAt": now, "updatedAt": now, "lastLoginAt": now})
     new_user = await user_collection.insert_one(user_data)
+
     created_user = await user_collection.find_one({"_id": new_user.inserted_id})
     accountDetails = body.accountDetails
     account_details = accountDetails.model_dump(by_alias=True)
