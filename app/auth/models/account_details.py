@@ -26,8 +26,8 @@ class AccountDetailsBaseModel(BaseModel):
     contactName: str | None = Field(None)
     billlingEmail: EmailStr | None = Field(None)
     maillingAddress: str | None = Field(None)
-    createdAt: str | None = Field(None)
-    updatedAt: str | None = Field(None)
+    createdAt: int | None = Field(None)
+    updatedAt: int | None = Field(None)
     model_config = ConfigDict(
         populate_by_name=True,
         arbitrary_types_allowed=True,
@@ -49,7 +49,8 @@ class AccountDetailsBaseModel(BaseModel):
     )
 
 
-class AccountDetailsModel(BaseModel):
+
+class AccountDetailsModel(AccountDetailsBaseModel):
     id: Optional[PyObjectId] = Field(alias="_id", default=None)
 
 

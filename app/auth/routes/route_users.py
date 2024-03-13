@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from bson import ObjectId
 from fastapi import APIRouter, HTTPException, status
 
@@ -32,11 +34,17 @@ async def create_user(
     A unique `id` will be created and provided in the response.
     """
     user = body.user
-    new_user = await user_collection.insert_one(user.model_dump(by_alias=True))
+
+    now = int(datetime.utcnow().timestamp())
+    user_data = user.model_dump()
+    user_data.update({"createdAt": now, "updatedAt": now, "lastLoginAt": now})
+    new_user = await user_collection.insert_one(user_data)
+
     created_user = await user_collection.find_one({"_id": new_user.inserted_id})
     accountDetails = body.accountDetails
     account_details = accountDetails.model_dump(by_alias=True)
     account_details["userID"] = new_user.inserted_id
+    account_details.update({"createdAt": now, "updatedAt": now})
 
     new_account_details = await account_details_collection.insert_one(account_details)
 
@@ -93,7 +101,7 @@ async def delete_user(id: str):
     """
     Get the record for a specific user, looked up by `id`.
     """
-    if (await user_collection.find_one({"_id": ObjectId(id)})) is not None:
+    if (await user_collection.find_one({"_id": ObjectId(id)})) is None:
         raise HTTPException(status_code=404, detail="User not found")
     await user_collection.delete_one({"_id": ObjectId(id)})
     await account_details_collection.delete_one({"userID": ObjectId(id)})

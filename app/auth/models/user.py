@@ -32,9 +32,9 @@ class UserBaseModel(BaseModel):
 
 class UserModel(UserBaseModel):
     id: PyObjectId = Field(alias="_id")
-    createdAt: str = Field(...)
-    updatedAt: str = Field(...)
-    lastLoginAt: str = Field(...)
+    createdAt: int = Field(...)
+    updatedAt: int = Field(...)
+    lastLoginAt: int = Field(...)
     model_config = ConfigDict(
         populate_by_name=True,
         arbitrary_types_allowed=True,

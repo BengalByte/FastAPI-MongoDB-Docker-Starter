@@ -21,21 +21,20 @@ def add_exception_handler(app, exception_handler):
 
 
 def http_error_handler(request, exc):
-    return JSONResponse(
-        status_code=exc.status_code,
-        content={"message": exc.detail}
-    )
+    return JSONResponse(status_code=exc.status_code, content={"message": exc.detail})
+
 
 def validation_exception_handler(request, exc):
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-        content={"message": exc.errors()}
+        content={"message": exc.errors()},
     )
+
 
 def exception_handler():
     return {
         HTTPException: http_error_handler,
-        RequestValidationError: validation_exception_handler
+        RequestValidationError: validation_exception_handler,
     }
 
 
@@ -46,8 +45,8 @@ def configure_routes(app):
 
 def create_app():
     app = FastAPI(
-        title="Student Course API",
-        summary="A sample application showing how to use FastAPI to add a ReST API to a MongoDB collection.",
+        title="FastAPI MongoDB Docker Starter",
+        summary="A starter application open-source boilerplate for quick web app and API setup. It combines FastAPI, MongoDB, and Docker for an efficient development and deployment experience",
     )
     configure_routes(app)
     add_middleware(app, [])
@@ -60,4 +59,5 @@ app = create_app()
 if __name__ == "__main__":
     app = create_app()
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8000)
