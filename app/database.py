@@ -1,4 +1,5 @@
 import os
+from enum import Enum
 
 from dotenv import load_dotenv
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -35,6 +36,31 @@ MONGODB_URL = (
 )
 
 client = AsyncIOMotorClient(MONGODB_URL)
-db = client.worktite
-user_collection = db.get_collection("users")
-account_details_collection = db.get_collection("accountDetails")
+
+
+class Tables(str, Enum):
+    USER = 'users'
+    USER_DETAILS = 'user_details'
+
+
+async def setup_db():
+    db = client[os.getenv("DB_NAME")]
+    await db.pages.drop()
+    return db
+
+
+async def collections(ct: Tables):
+    db = await setup_db()
+    return db.get_collection(ct.value)
+
+
+class Collections:
+    def __init__(self, ct: Tables):
+        self.ct = ct.value
+
+    async def __call__(self):
+        db = await setup_db()
+        return db.get_collection(self.ct)
+
+
+

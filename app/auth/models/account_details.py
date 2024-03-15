@@ -1,10 +1,9 @@
 from enum import Enum
-from typing import Annotated, Optional
+from typing import Optional
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
-from pydantic.functional_validators import BeforeValidator
+from pydantic import ConfigDict, EmailStr, Field
 
-PyObjectId = Annotated[str, BeforeValidator(str)]
+from app.core.mixins import TimeStampMixin, PyObjectId
 
 
 class Gender(str, Enum):
@@ -13,7 +12,7 @@ class Gender(str, Enum):
     OTHER = "other"
 
 
-class AccountDetailsBaseModel(BaseModel):
+class AccountDetailsBaseModel(TimeStampMixin):
     userID: Optional[PyObjectId] = Field(default=None)
     name: str | None = Field(None)
     image: str | None = Field(None)
@@ -24,10 +23,8 @@ class AccountDetailsBaseModel(BaseModel):
     companyName: str | None = Field(None)
     vatNumber: str | None = Field(None)
     contactName: str | None = Field(None)
-    billlingEmail: EmailStr | None = Field(None)
-    maillingAddress: str | None = Field(None)
-    createdAt: int | None = Field(None)
-    updatedAt: int | None = Field(None)
+    billingEmail: EmailStr | None = Field(None)
+    mailingAddress: str | None = Field(None)
     model_config = ConfigDict(
         populate_by_name=True,
         arbitrary_types_allowed=True,
@@ -41,26 +38,28 @@ class AccountDetailsBaseModel(BaseModel):
             "companyName": "John Doe Company",
             "vatNumber": "1234567890",
             "contactName": "John Doe",
-            "billlingEmail": "johndoe@email.com",
-            "maillingAddress": "123, Example Street, Example City, Example Country",
+            "billingEmail": "johndoe@email.com",
+            "mailingAddress": "123, Example Street, Example City, Example Country",
             "createdAt": "2021-07-01",
             "updatedAt": "2021-07-01",
         },
     )
 
 
-
 class AccountDetailsModel(AccountDetailsBaseModel):
     id: Optional[PyObjectId] = Field(alias="_id", default=None)
 
 
-class AccountDetailsCreateRequestModel(AccountDetailsBaseModel): ...
+class AccountDetailsCreateRequestModel(AccountDetailsBaseModel):
+    pass
 
 
-class AccountDetailsCreateResponseModel(AccountDetailsBaseModel): ...
+class AccountDetailsCreateResponseModel(AccountDetailsBaseModel):
+    pass
 
 
-class AccountDetailsUpdateRequestModel(AccountDetailsModel): ...
+class AccountDetailsUpdateRequestModel(AccountDetailsModel):
+    pass
 
 
 class AccountDetailsUpdateResponseModel(AccountDetailsModel): ...

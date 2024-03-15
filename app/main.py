@@ -1,8 +1,11 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, status
 from fastapi.exceptions import HTTPException, RequestValidationError
 from fastapi.responses import JSONResponse
 
-from app.auth.routes.route_users import user_router
+from app.auth.routes.user import user_router
+from app.database import setup_db, Tables
 
 
 def include_router(app, *routers):
@@ -38,15 +41,24 @@ def exception_handler():
     }
 
 
-def configure_routes(app):
+def configure_routes(app:FastAPI):
     routers = [user_router]
     include_router(app, *routers)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    db = await setup_db()
+    db[Tables.USER].create_index("email", unique=True)
+    yield
 
 
 def create_app():
     app = FastAPI(
         title="FastAPI MongoDB Docker Starter",
-        summary="A starter application open-source boilerplate for quick web app and API setup. It combines FastAPI, MongoDB, and Docker for an efficient development and deployment experience",
+        summary="A starter application open-source boilerplate for quick web app and API setup. It combines FastAPI, "
+                "MongoDB, and Docker for an efficient development and deployment experience",
+        lifespan=lifespan
     )
     configure_routes(app)
     add_middleware(app, [])
@@ -60,4 +72,4 @@ if __name__ == "__main__":
     app = create_app()
     import uvicorn
 
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run('app.main:app', host="0.0.0.0", port=8000, reload=True)
