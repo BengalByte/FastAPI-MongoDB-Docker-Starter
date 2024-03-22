@@ -1,71 +1,89 @@
-from typing import List
+from typing import List, Annotated
 
-from fastapi import APIRouter, status, Depends, HTTPException
-from motor.core import AgnosticCollection
+from fastapi import APIRouter, HTTPException, Depends, Request
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
-from app.database import Collections, Tables
-from ..dto.user import UserCreateDto
-from ..models.user import (
-    UserDeleteResponseModel,
-    UserBaseSchema
-)
-from ..models.user_account_details import (
-    UserAccountDetailsModel,
-)
+from app.auth.dto.token import Token, RefreshToken
+from app.auth.dto.user import UserCreateDto, UserResponseDto
+from app.auth.models.token import BlackListTokenSchema
+from app.auth.models.user import UserBaseSchema
+from app.auth.utils import create_access_token, create_refresh_token, decode_jwt
 
 user_router = APIRouter()
-
-# dependencies
-user_collection = Collections(Tables.USER)
-user_details_collection = Collections(Tables.USER_DETAILS)
+auth_scheme = HTTPBearer()
 
 
 @user_router.get(
     "/users/",
     response_description="List all users",
-    response_model=List[UserBaseSchema],
+    response_model=List[UserResponseDto],
     response_model_by_alias=False,
 )
-async def list_users(collection=Depends(user_collection)):
-    return await collection.find().to_list(1000)
+async def list_users():
+    return await UserBaseSchema.find_all().to_list(length=1)
 
 
-@user_router.post("/user")
-async def create_user(body: UserCreateDto, collection: AgnosticCollection = Depends(user_collection)):
+@user_router.post(
+    "/user",
+    response_model=UserResponseDto,
+    response_model_by_alias=False,
+)
+async def create_user(body: UserCreateDto):
     user = UserBaseSchema(**body.model_dump())
     try:
-        await collection.insert_one(user.make_hash().model_dump())
+        user.make_hash()
+        user = await user.insert()
+        return user
     except Exception as e:
         print(e)
         raise HTTPException(status_code=404, detail=str(e))
 
-    return {"message": "Done"}
 
-
-@user_router.post("/login")
-async def create_user(body: UserCreateDto, collection: AgnosticCollection = Depends(user_collection)):
-    data = await collection.find_one(filter={"userName": body.userName, "email": body.email})
-    if data:
-        return {"data": UserBaseSchema(**data)}
-    return {"message": "User not found"}
+@user_router.post(
+    "/login",
+    response_model=Token,
+    response_model_by_alias=False,
+)
+async def login_user(body: UserCreateDto):
+    user = await UserBaseSchema.find_one({"email": body.email, "userName": body.userName})
+    if user:
+        if user.verify_password(body.password):
+            access_token = create_access_token(data=user.model_dump())
+            refresh_token = create_refresh_token(data=user.model_dump())
+            return Token(access_token=access_token, refresh_token=refresh_token)
+        else:
+            return {"message": "Incorrect password"}
+    else:
+        raise HTTPException(status_code=404, detail="Not Found")
 
 
 @user_router.get(
-    "/users/{id}",
-    response_description="Get user by user ID",
-    response_model=UserAccountDetailsModel,
+    "/me",
     response_model_by_alias=False,
 )
-async def show_user(id: str):
-    pass
+async def get_current_user(request: Request,
+                           credentials: Annotated[HTTPAuthorizationCredentials, Depends(auth_scheme)]):
+    return request.user
 
 
-@user_router.delete(
-    "/users/{id}",
-    response_description="Delete user by user ID",
-    response_model=UserDeleteResponseModel,
-    status_code=status.HTTP_200_OK,
+@user_router.post(
+    "/rotate-token",
     response_model_by_alias=False,
 )
-async def delete_user(id: str):
-    pass
+async def get_current_user(body: RefreshToken):
+    data = decode_jwt(body.refresh_token)
+    b_token = BlackListTokenSchema(token=body.refresh_token)
+    await b_token.insert()
+    user = await UserBaseSchema.find_one({"email": data.email, "userName": data.userName})
+    if user:
+        access_token = create_access_token(data=user.model_dump())
+        refresh_token = create_refresh_token(data=user.model_dump())
+        return Token(access_token=access_token, refresh_token=refresh_token)
+    else:
+        raise HTTPException(status_code=404, detail="Not Found")
+
+
+@user_router.get("/token-blacklist")
+async def get_current_user(body: RefreshToken):
+    b_token = BlackListTokenSchema(token=body.refresh_token)
+    return {"message": "ok"}

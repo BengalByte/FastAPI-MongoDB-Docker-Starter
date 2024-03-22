@@ -37,7 +37,7 @@ idna==3.4
     #   email-validator
 motor==3.3.1
     # via -r requirement.in
-pydantic==2.4.2
+pydantic~=2.6.4
     # via
     #   -r requirement.in
     #   fastapi
@@ -67,3 +67,6 @@ typing-extensions==4.8.0
     #   pydantic-core
 uvicorn==0.23.2
     # via -r requirement.in
+
+beanie~=1.25.0
+passlib~=1.7.4

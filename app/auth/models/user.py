@@ -1,11 +1,13 @@
 from datetime import datetime
 from enum import Enum
-from typing import Annotated, List, Optional
+from typing import Annotated
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
-from pydantic.functional_validators import BeforeValidator, field_validator
+from beanie import Document, Indexed
+from pydantic import EmailStr, Field
+from pydantic.functional_validators import BeforeValidator
 
-from app.core.mixins import TimeStampMixin, verify_password_hash, get_password_hash
+from app.auth.models import MongoTables
+from app.core.mixins import TimeStampMixin, verify_password_hash, get_password_hash, datetime_now_sec
 
 PyObjectId = Annotated[str, BeforeValidator(str)]
 
@@ -16,26 +18,15 @@ class UserType(int, Enum):
     SUPER_ADMIN = 0
 
 
-class CommonModel(BaseModel):
-    id: Optional[PyObjectId] = Field(None, alias="_id")
-
-
-class UserBaseSchema(CommonModel, TimeStampMixin):
+class UserBaseSchema(Document, TimeStampMixin):
     userType: UserType = Field(default=UserType.SELLER)
     userName: str = Field(...)
-    email: EmailStr = Field(...)
+    email: EmailStr = Indexed(unique=True)
+    lastLoginAt: datetime = Field(default_factory=datetime_now_sec)
     password: str = Field(...)
-    lastLoginAt: datetime = datetime.now()
-    model_config = ConfigDict(
-        populate_by_name=True,
-        arbitrary_types_allowed=True,
-        json_schema_extra={
-            "userType": "seller",
-            "userName": "John Doe",
-            "email": "john@email.com",
-            "password": "XXXXXXXX",
-        },
-    )
+
+    class Settings:
+        name = MongoTables.USER
 
     def verify_password(self, password: str) -> bool:
         return verify_password_hash(password, self.password)
@@ -45,48 +36,3 @@ class UserBaseSchema(CommonModel, TimeStampMixin):
             raise ValueError("password is required")
         self.password = get_password_hash(self.password)
         return self
-
-
-
-class UserModel(UserBaseSchema):
-    id: PyObjectId = Field(alias="_id")
-    createdAt: int = Field(...)
-    updatedAt: int = Field(...)
-    lastLoginAt: int = Field(...)
-    model_config = ConfigDict(
-        populate_by_name=True,
-        arbitrary_types_allowed=True,
-        json_schema_extra={
-            "createdAt": "2021-07-01",
-            "updatedAt": "2021-07-01",
-            "lastLoginAt": "2021-07-01",
-        },
-    )
-
-
-class UserCreateRequestModel(UserBaseSchema): ...
-
-
-class UserCreateResponseModel(UserModel): ...
-
-
-class UserUpdateRequestModel(UserBaseSchema):
-    id: PyObjectId = Field(alias="_id")
-
-
-class UserUpdateResponseModel(UserBaseSchema): ...
-
-
-class UserDeleteResponseModel(BaseModel):
-    message: str = Field(...)
-
-
-class UserGetResponseModel(UserModel): ...
-
-
-class UserCollectionModel(BaseModel):
-    """
-    A container holding a list of `UserModel` instances.
-    """
-
-    users: List[UserModel]

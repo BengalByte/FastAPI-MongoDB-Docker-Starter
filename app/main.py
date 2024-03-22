@@ -1,11 +1,16 @@
 from contextlib import asynccontextmanager
 
+from beanie import init_beanie
 from fastapi import FastAPI, status
 from fastapi.exceptions import HTTPException, RequestValidationError
 from fastapi.responses import JSONResponse
+from starlette.middleware.authentication import AuthenticationMiddleware
 
+from app.auth.models.token import BlackListTokenSchema
+from app.auth.models.user import UserBaseSchema
 from app.auth.routes.user import user_router
-from app.database import setup_db, Tables
+from app.core.database.beanie_db import mongo_database
+from app.core.middleware.auth import BearerTokenAuthBackend
 
 
 def include_router(app, *routers):
@@ -41,15 +46,15 @@ def exception_handler():
     }
 
 
-def configure_routes(app:FastAPI):
+def configure_routes(app: FastAPI):
     routers = [user_router]
     include_router(app, *routers)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    db = await setup_db()
-    db[Tables.USER].create_index("email", unique=True)
+    db = mongo_database()
+    await init_beanie(database=db, document_models=[UserBaseSchema, BlackListTokenSchema])
     yield
 
 
@@ -61,6 +66,8 @@ def create_app():
         lifespan=lifespan
     )
     configure_routes(app)
+
+    app.add_middleware(AuthenticationMiddleware, backend=BearerTokenAuthBackend())
     add_middleware(app, [])
     add_exception_handler(app, exception_handler())
 
